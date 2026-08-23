@@ -1,0 +1,223 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-serif: 'Cormorant Garamond', Georgia, serif;
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --bg-primary: #050505;
+    --bg-surface: #0D0D0D;
+    --text-primary: #E0E0E0;
+    --text-secondary: #94A3B8;
+    --border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  h1, h2, h3, .font-luxury {
+    font-family: var(--font-serif);
+  }
+}
+
+/* Light Theme High-Contrast Mode for Daylight Office Accessibility */
+html.light-theme,
+[data-theme="light"] {
+  --bg-primary: #F4F6F9;
+  --bg-surface: #FFFFFF;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --border-color: rgba(15, 23, 42, 0.12);
+  color-scheme: light;
+}
+
+html.light-theme body,
+[data-theme="light"] body {
+  background-color: #F4F6F9;
+  color: #0F172A;
+}
+
+/* High-contrast element overrides for Light Theme */
+.light-theme .bg-\[\#050505\],
+.light-theme .bg-\[\#0d0d0d\],
+.light-theme .bg-\[\#0D0D0D\],
+.light-theme .bg-\[\#111111\],
+.light-theme .bg-\[\#141414\],
+.light-theme .bg-\[\#0a0a0a\],
+.light-theme .bg-\[\#080808\],
+.light-theme .bg-black {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+}
+
+.light-theme .bg-black\/40,
+.light-theme .bg-black\/50,
+.light-theme .bg-black\/60,
+.light-theme .bg-black\/80 {
+  background-color: #F8FAFC !important;
+}
+
+.light-theme .bg-white\/\[0\.02\],
+.light-theme .bg-white\/\[0\.03\],
+.light-theme .bg-white\/\[0\.04\],
+.light-theme .bg-white\/\[0\.05\],
+.light-theme .bg-white\/\[0\.06\],
+.light-theme .bg-white\/\[0\.08\],
+.light-theme .bg-white\/\[0\.1\] {
+  background-color: #F1F5F9 !important;
+}
+
+.light-theme .border-white\/5,
+.light-theme .border-white\/10,
+.light-theme .border-white\/15,
+.light-theme .border-white\/20 {
+  border-color: #E2E8F0 !important;
+}
+
+.light-theme .text-white {
+  color: #0F172A !important;
+}
+
+.light-theme .text-white\/90,
+.light-theme .text-white\/80 {
+  color: #1E293B !important;
+}
+
+.light-theme .text-white\/70,
+.light-theme .text-white\/60,
+.light-theme .text-white\/50 {
+  color: #475569 !important;
+}
+
+.light-theme .text-white\/40,
+.light-theme .text-white\/30 {
+  color: #64748B !important;
+}
+
+.light-theme .text-\[\#E0E0E0\] {
+  color: #0F172A !important;
+}
+
+.light-theme input,
+.light-theme select,
+.light-theme textarea {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
+}
+
+.light-theme input:focus,
+.light-theme select:focus,
+.light-theme textarea:focus {
+  border-color: #B8860B !important;
+  box-shadow: 0 0 0 2px rgba(184, 134, 11, 0.2);
+}
+
+.light-theme .shadow-xl,
+.light-theme .shadow-2xl {
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04) !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050505;
+}
+
+.light-theme ::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.2);
+  border-radius: 3px;
+}
+
+.light-theme ::-webkit-scrollbar-thumb {
+  background: rgba(184, 134, 11, 0.35);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.45);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.light-theme .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.15);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.4);
+}
+
+/* Gold Accent Utility Classes */
+.text-gold {
+  color: #D4AF37;
+}
+
+.light-theme .text-gold,
+.light-theme .text-\[\#D4AF37\] {
+  color: #B8860B !important;
+}
+
+.bg-gold {
+  background-color: #D4AF37;
+}
+
+.light-theme .bg-gold,
+.light-theme .bg-\[\#D4AF37\] {
+  background-color: #D4AF37 !important;
+  color: #000000 !important;
+}
+
+.border-gold {
+  border-color: #D4AF37;
+}
+
+.light-theme .border-gold,
+.light-theme .border-\[\#D4AF37\] {
+  border-color: #B8860B !important;
+}
+
+.border-gold-subtle {
+  border-color: rgba(212, 175, 55, 0.25);
+}
+
+.light-theme .border-gold-subtle,
+.light-theme .border-\[\#D4AF37\]\/30,
+.light-theme .border-\[\#D4AF37\]\/20,
+.light-theme .border-\[\#D4AF37\]\/40 {
+  border-color: rgba(184, 134, 11, 0.3) !important;
+}
+
+.bg-gold-subtle {
+  background-color: rgba(212, 175, 55, 0.08);
+}
+
+.light-theme .bg-gold-subtle,
+.light-theme .bg-\[\#D4AF37\]\/10,
+.light-theme .bg-\[\#D4AF37\]\/15,
+.light-theme .bg-\[\#D4AF37\]\/5 {
+  background-color: rgba(184, 134, 11, 0.1) !important;
+}
+
