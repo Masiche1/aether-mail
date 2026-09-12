@@ -1,0 +1,177 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: aethermail-postgres
+    environment:
+      POSTGRES_DB: aethermail
+      POSTGRES_USER: aethermail
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-aethermail}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aethermail"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache & Queue
+  redis:
+    image: redis:7-alpine
+    container_name: aethermail-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Django REST API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: aethermail-api
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    environment:
+      DEBUG: "False"
+      DJANGO_SETTINGS_MODULE: config.settings
+      DATABASE_URL: postgresql://aethermail:${DB_PASSWORD:-aethermail}@postgres:5432/aethermail
+      REDIS_URL: redis://redis:6379
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      EMAIL_HOST: postfix
+      EMAIL_PORT: 25
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-noreply@aethermail.local}
+      BOUNCE_MAILDIR: /var/mail/aethermail-bounces/new
+      IMAP_HOST: dovecot
+      IMAP_PORT: 993
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app/backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Celery Workers
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: aethermail-celery-worker
+    command: celery -A workers.celery_app worker -l info
+    environment:
+      DEBUG: "False"
+      DJANGO_SETTINGS_MODULE: config.settings
+      DATABASE_URL: postgresql://aethermail:${DB_PASSWORD:-aethermail}@postgres:5432/aethermail
+      REDIS_URL: redis://redis:6379
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      EMAIL_HOST: postfix
+      EMAIL_PORT: 25
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-noreply@aethermail.local}
+      BOUNCE_MAILDIR: /var/mail/aethermail-bounces/new
+      IMAP_HOST: dovecot
+      IMAP_PORT: 993
+      IMAP_PASSWORD: ${IMAP_PASSWORD:-}
+    depends_on:
+      - postgres
+      - redis
+      - api
+    volumes:
+      - ./backend:/app/backend
+      - ./workers:/app/workers
+      - maildata:/var/mail
+
+  # Celery Beat (Scheduler)
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: aethermail-celery-beat
+    command: celery -A workers.celery_app beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    environment:
+      DEBUG: "False"
+      DJANGO_SETTINGS_MODULE: config.settings
+      DATABASE_URL: postgresql://aethermail:${DB_PASSWORD:-aethermail}@postgres:5432/aethermail
+      REDIS_URL: redis://redis:6379
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+    depends_on:
+      - postgres
+      - redis
+      - api
+    volumes:
+      - ./backend:/app/backend
+      - ./workers:/app/workers
+      - maildata:/var/mail
+
+  # Postfix SMTP Server
+  postfix:
+    image: boky/postfix:latest
+    container_name: aethermail-postfix
+    environment:
+      HOSTNAME: mail.aethermail.local
+      RELAYHOST: ""
+      ALLOWED_SENDER_DOMAINS: localhost
+      POSTFIX_myhostname: mail.aethermail.local
+      POSTFIX_mynetworks: 127.0.0.0/8,172.16.0.0/12
+    volumes:
+      - postfix_spool:/var/spool/postfix
+      - maildata:/var/mail
+    ports:
+      - "25:25"
+      - "587:587"
+      - "465:465"
+    depends_on:
+      - postgres
+
+  # Dovecot IMAP/Mailbox Server
+  dovecot:
+    image: dovecot/dovecot:latest
+    container_name: aethermail-dovecot
+    ports:
+      - "143:143"
+      - "993:993"
+    depends_on:
+      - postfix
+    volumes:
+      - maildata:/var/mail
+      - postfix_spool:/var/spool/postfix
+      - ./infra/dovecot/dovecot.conf:/etc/dovecot/dovecot.conf:ro
+      - ./infra/dovecot/dovecot-sql.conf.ext:/etc/dovecot/dovecot-sql.conf.ext:ro
+      - ./certs:/etc/dovecot/certs:ro
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: aethermail-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+  postfix_spool:
+  maildata:

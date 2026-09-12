@@ -1,6 +1,0 @@
-{
-  "name": "AetherMail Delivery Platform",
-  "description": "Self-hosted autonomous email and SMS delivery platform with private sending domains, built-in mailboxes, intelligent campaign scheduler, queue monitoring, deliverability scoring, contact segmentation, and multi-channel automations.",
-  "requestFramePermissions": ["microphone"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
