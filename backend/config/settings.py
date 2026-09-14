@@ -16,30 +16,9 @@ load_dotenv(BASE_DIR.parent / ".env")
 # CORE
 # ============================================================
 
-SECRET_KEY = os.getenv(
-    "SECRET_KEY",
-    "dev-only-change-me",
-)
-
-DEBUG = os.getenv("DEBUG", "False").lower() in {
-    "1",
-    "true",
-    "yes",
-}
-
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.getenv(
-        "ALLOWED_HOSTS",
-        "localhost,127.0.0.1",
-    ).split(",")
-    if host.strip()
-]
-
-
-# ============================================================
-# APPLICATIONS
-# ============================================================
+SECRET_KEY = os.getenv('SECRET_KEY', 'dev-only-change-me')
+DEBUG = os.getenv('DEBUG', 'True').lower() in {'1', 'true', 'yes'}
+ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if host.strip()]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
