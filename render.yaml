@@ -55,7 +55,7 @@ services:
     env: python
     plan: free # Change to paid plans for production
     buildCommand: cd backend && pip install -r requirements.txt
-    startCommand: cd backend && celery -A ../workers.celery_app worker --loglevel=info
+    startCommand: cd backend && python -m celery -A workers.celery_app worker --loglevel=info
     envVars:
       - key: PYTHON_VERSION
         value: 3.11
