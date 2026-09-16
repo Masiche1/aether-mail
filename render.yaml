@@ -1,0 +1,83 @@
+services:
+  # Redis Instance
+  - type: redis
+    name: aether-mail-redis
+    maxmemoryPolicy: allkeys-lru
+    plan: free # Change to paid plans for production
+
+  # Backend API
+  - type: web
+    name: aether-mail-backend
+    env: python
+    plan: free # Change to paid plans for production
+    buildCommand: cd backend && pip install -r requirements.txt
+    startCommand: cd backend && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: DATABASE_URL
+        fromDatabase:
+          name: aether-mail-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: aether-mail-redis
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        value: aether-mail-backend.onrender.com,localhost,127.0.0.1
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://aether-mail-frontend.onrender.com,http://localhost:5173
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://aether-mail-frontend.onrender.com,http://localhost:5173
+
+  # Frontend
+  - type: web
+    name: aether-mail-frontend
+    env: node
+    plan: free # Change to paid plans for production
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm run preview -- --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: aether-mail-backend
+          property: url
+
+  # Celery Worker
+  - type: worker
+    name: aether-mail-celery-worker
+    env: python
+    plan: free # Change to paid plans for production
+    buildCommand: cd backend && pip install -r requirements.txt
+    startCommand: cd backend && celery -A ../workers.celery_app worker --loglevel=info
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: SECRET_KEY
+        fromService:
+          type: web
+          name: aether-mail-backend
+          property: envVars
+          envVarName: SECRET_KEY
+      - key: DATABASE_URL
+        fromDatabase:
+          name: aether-mail-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: aether-mail-redis
+          property: connectionString
+
+databases:
+  # PostgreSQL Database
+  - name: aether-mail-db
+    databaseName: aethermail
+    user: aethermail_user
+    plan: free # Change to paid plans for production
