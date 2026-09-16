@@ -21,6 +21,7 @@ app = Celery('aethermail', include=[
     'workers.mailbox_processor.task',
     'workers.dns_monitor.task',
     'workers.reputation.task',
+    'workers.tracking_processor.task',
 ])
 
 # Load configuration from Django settings
